@@ -41,3 +41,4 @@ Run the tests:
 ## About
 
 Built as a hands-on QA automation project to demonstrate practical skills in writing, structuring, and debugging automated tests for web applications. The suite reflects how QA is done in real teams — testing user flows, catching failures, and verifying fixes.
+# QA Automation Tests

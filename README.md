@@ -1,155 +1,90 @@
 # QA Automation Portfolio
 
-End-to-end automated testing suite for an e-commerce web application (SauceDemo), covering **four testing layers**: UI automation, API testing, database verification, and continuous integration.
+Automated testing for an e-commerce web application (SauceDemo), covering UI automation, database verification and continuous integration.
 
-Built with Python, Playwright, PyTest, Postman and GitHub Actions.
-
-[![Tests](https://github.com/greatman-786/qa-portfolio/actions/workflows/tests.yml/badge.svg)](https://github.com/greatman-786/qa-portfolio/actions)
+Built with Python, Playwright, PyTest and GitHub Actions.
 
 ---
 
-## Overview
+## What it covers
 
-This project automates the critical journeys a real user takes on an e-commerce site — from logging in to completing a purchase — and verifies each step behaves correctly. It tests both the "happy path" (everything works) and negative cases (invalid inputs handled properly), reflecting real-world QA practice.
+This suite automates the journeys a real user takes — logging in, adding to the cart, completing a purchase — and checks each step behaves correctly. It tests the happy path and the negative cases, because the interesting failures are the ones nobody planned for.
 
-Testing doesn't stop at the interface. This suite also checks the API responses and confirms that data is genuinely saved to the database — because a success message on screen is not proof that anything was stored.
+It doesn't stop at the interface. A database test confirms data is genuinely written, because a success message on screen is not proof that anything was stored.
 
----
-
-## Testing Layers Covered
-
-| Layer | What It Verifies | Tool |
+| Layer | What it verifies | Tool |
 |---|---|---|
-| **UI / End-to-end** | User journeys work in a real browser | Playwright + PyTest |
-| **API** | Endpoints return correct status codes and data | Postman |
-| **Database** | Data is actually persisted correctly | SQLite + PyTest |
-| **Continuous Integration** | Every code change is tested automatically | GitHub Actions |
+| UI / end-to-end | User journeys work in a real browser | Playwright + PyTest |
+| Database | Data is actually persisted | SQLite + PyTest |
+| Continuous integration | Every push is tested automatically | GitHub Actions |
 
 ---
 
-## 1. UI Automation — `test_saucedemo.py`
+## 1. UI automation — `test_saucedemo.py`
 
-Five automated end-to-end tests covering the core e-commerce flow:
+Five end-to-end tests covering the core flow:
 
-| # | Test | What It Verifies |
+| # | Test | What it verifies |
 |---|---|---|
 | 1 | `test_login_page_loads` | The login form renders correctly |
 | 2 | `test_valid_login` | Correct credentials reach the products page |
 | 3 | `test_invalid_login` | Wrong credentials are rejected with a clear error |
 | 4 | `test_add_to_cart` | Items are added and the cart badge updates |
-| 5 | `test_checkout` | Full flow: cart → checkout → details → order confirmed |
+| 5 | `test_checkout` | Cart → checkout → details → order confirmed |
 
-**Testing approach:**
-- Covers both positive cases (valid flows) and negative cases (invalid logins, empty fields)
-- Each test is independent and runs from a clean state
-- Uses specific, reliable locators (e.g. `.shopping_cart_badge`) rather than loose text matching, to avoid flaky tests and strict-mode violations
-- Mirrors genuine user journeys end to end
+**Approach:**
 
----
-
-## 2. Database Testing — `test_database.py`
-
-Verifies that data reaching the interface is actually stored correctly:
-
-- Connects to the database
-- Inserts a record
-- Queries it back with a `SELECT`
-- Asserts the record genuinely exists
-- Closes the connection cleanly
-
-This covers the gap that UI tests can't see: the screen may say "success" while nothing was saved.
+- Positive and negative cases, not just the path that works
+- Each test independent and starting from a clean state
+- Specific locators like `.shopping_cart_badge` rather than loose text matching, which is what keeps a suite from going flaky
+- Journeys that mirror what a user actually does
 
 ---
 
-## 3. API Testing — Postman
+## 2. Database testing — `test_database.py`
 
-REST endpoints validated directly, independent of the interface:
+Confirms that data reaching the interface is actually stored: connects, inserts a record, queries it back with a SELECT, asserts it exists, closes cleanly.
 
-- `GET` requests checked for correct status codes (`200 OK` on valid requests, `404` on invalid paths)
-- Response structure and content verified
-- Assertion scripts written in Postman's test tab to check results automatically:
-
-```javascript
-pm.test("Status is 200", function () {
-    pm.response.to.have.status(200);
-});
-```
+This covers the gap UI tests can't see. The screen can say "success" while nothing was saved — which is a failure mode I've hit for real on another project, where a webhook reported 52 consecutive successes while writing empty rows.
 
 ---
 
-## 4. CI/CD Pipeline — GitHub Actions
+## 3. CI/CD — GitHub Actions
 
-A workflow at `.github/workflows/tests.yml` runs the entire suite automatically on **every push**:
+A workflow at `.github/workflows/tests.yml` runs the suite on every push:
 
-1. Spins up a clean Ubuntu environment
-2. Installs Python 3.11 and dependencies
-3. Installs the Playwright Chromium browser
-4. Runs all UI and database tests
-5. Reports pass/fail status
+- Clean Ubuntu environment
+- Python 3.11 and dependencies installed
+- Playwright Chromium installed
+- UI and database tests run
+- Pass/fail reported
 
-This means no code change goes unverified. Live run history is visible in the [**Actions**](https://github.com/greatman-786/qa-portfolio/actions) tab.
-
----
-
-## Manual Testing
-
-Alongside automation, this portfolio is backed by structured manual testing practice:
-
-- **Test case design** — written cases covering login, cart, checkout, and edge conditions
-- **Exploratory testing** — 15+ UI elements tested including forms, dropdowns, file uploads, JavaScript alerts, drag-and-drop, dynamic loading, hovers and sliders
-- **Bug reporting** — real defects found and documented with reproducible steps, severity, and expected vs actual behaviour, including a server-side signup failure discovered on a live production app
-
-Automation catches regressions; manual testing catches what nobody thought to automate. Both matter.
+Run history is public in the [Actions tab](https://github.com/greatman-786/qa-portfolio/actions) — including one red run from August, left there because a history with no failures in it isn't a real history.
 
 ---
 
-## Tech Stack
-
-- **Python** — core language
-- **Playwright** — modern browser automation
-- **PyTest** — test framework and runner
-- **SQLite** — database testing
-- **Postman** — API testing
-- **GitHub Actions** — CI/CD
-
----
-
-## How to Run
-
-Install dependencies:
+## How to run it
 
 ```bash
 pip install pytest-playwright
 playwright install
 ```
 
-Run the UI tests:
-
 ```bash
-pytest test_saucedemo.py -v
-```
-
-Run the database tests:
-
-```bash
-pytest test_database.py -v
-```
-
-Run everything:
-
-```bash
-pytest -v
+pytest test_saucedemo.py -v     # UI tests
+pytest test_database.py -v      # database test
+pytest -v                       # everything
 ```
 
 ---
 
-## About
+## What isn't in this repo
 
-Built as a hands-on QA project to demonstrate practical, verifiable testing skills across the full stack — not just clicking through a browser, but validating the API and database layers underneath, with automation wired into CI so it runs continuously.
+I've also done manual exploratory testing, written test cases, and documented defects with reproduction steps and severity — including a server-side signup failure found on a live production app. Those documents aren't published here, so take this repo as the automated side only.
 
-Everything here is public and reproducible. The tests genuinely run, and the pipeline genuinely passes.
+The written-up version of that work is in the [AI Voice Agent](https://github.com/greatman-786/ai-voice-agent) repo: 13 test cases, 5 defects, each with cause and fix.
 
-**Asad Ullah** — AI Automation & QA Specialist
-📍 Sialkot, Pakistan
-🔗 [Portfolio](https://asad-portfolio-drab.vercel.app) · [LinkedIn](https://www.linkedin.com/in/asad-ullah-b0190a236) · [GitHub](https://github.com/greatman-786)
-📩 asadullah541989@gmail.com
+---
+
+**Asad Ullah** — AI automation and QA engineer. Sialkot, Pakistan.
+[Portfolio](https://asad-portfolio-drab.vercel.app) · [LinkedIn](https://www.linkedin.com/in/asad-ullah-b0190a236) · asadullah541989@gmail.com
